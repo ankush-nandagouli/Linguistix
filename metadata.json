@@ -1,0 +1,9 @@
+{
+  "name": "Linguistix",
+  "description": "Premium Indian script transliteration engine with visual OCR, document processing, and offline phonetic preservation.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": []
+}

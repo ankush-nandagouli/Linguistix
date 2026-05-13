@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "TransliterationHistory": {
+      "title": "Transliteration History",
+      "description": "Record of past transliterations for a user",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns this history item"
+        },
+        "originalText": {
+          "type": "string",
+          "description": "The original input text"
+        },
+        "transliteratedText": {
+          "type": "string",
+          "description": "The result of transliteration"
+        },
+        "sourceLanguage": {
+          "type": "string",
+          "description": "The source language/script"
+        },
+        "targetLanguage": {
+          "type": "string",
+          "description": "The target language/script"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["text", "pdf", "image"],
+          "description": "Type of input"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the transliteration was performed"
+        }
+      },
+      "required": ["userId", "originalText", "transliteratedText", "targetLanguage", "type", "timestamp"]
+    }
+  },
+  "firestore": {
+    "history": {
+      "schema": "TransliterationHistory",
+      "description": "Collection of transliteration history"
+    }
+  }
+}
