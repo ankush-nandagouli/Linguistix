@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Image as ImageIcon, Upload, Check, Copy } from 'lucide-react';
+import { Camera, Check, Copy } from 'lucide-react';
 import { SUPPORTED_LANGUAGES, transliterateImage } from '../services/gemini';
 import { offlineOCR, offlineTransliterate } from '../services/offline';
-import { db, auth } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '../lib/utils';
+import { auth } from '../lib/firebase';
+import { saveHistory } from '../lib/db';
 import { motion } from 'motion/react';
 
 export const ImageTransliteration: React.FC = () => {
@@ -37,9 +36,21 @@ export const ImageTransliteration: React.FC = () => {
         const ocrResult = await offlineOCR(base64);
         if (ocrResult.text.trim()) {
             const transResult = await offlineTransliterate(ocrResult.text, targetLang.name);
-            setOutputText(transResult.transliteratedText);
+            const result = transResult.transliteratedText;
+            setOutputText(result);
             setConfidence(ocrResult.confidence);
             setDetectedLang(transResult.detectedLanguage);
+            
+            if (auth.currentUser) {
+              saveHistory({
+                userId: auth.currentUser.uid,
+                originalText: '[Image Content]',
+                transliteratedText: result,
+                targetLanguage: targetLang.name,
+                type: 'image',
+                timestamp: Date.now()
+              }).catch(err => console.error("IndexedDB Save Error:", err));
+            }
         } else {
             setOutputText("No text detected offline");
             setConfidence(0);
@@ -47,22 +58,20 @@ export const ImageTransliteration: React.FC = () => {
       } else {
         const result = await transliterateImage(base64, targetLang.name);
         setOutputText(result);
-        setConfidence(0.9); // Gemnini usually high
+        setConfidence(0.9); // Gemini usually high
         setDetectedLang('Visual Detection');
         
         if (auth.currentUser) {
-          try {
-            await addDoc(collection(db, 'history'), {
-              userId: auth.currentUser.uid,
-              originalText: '[Image Content]',
-              transliteratedText: result,
-              targetLanguage: targetLang.name,
-              type: 'image',
-              timestamp: serverTimestamp()
-            });
-          } catch (error) {
-            handleFirestoreError(error, OperationType.WRITE, 'history');
-          }
+          saveHistory({
+            userId: auth.currentUser.uid,
+            originalText: '[Image Content]',
+            transliteratedText: result,
+            targetLanguage: targetLang.name,
+            type: 'image',
+            timestamp: Date.now()
+          }).catch(error => {
+            console.error("IndexedDB Save Error:", error);
+          });
         }
       }
     } catch (error) {

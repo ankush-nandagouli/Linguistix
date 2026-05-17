@@ -6,8 +6,8 @@ import { signOut } from 'firebase/auth';
 
 interface LayoutProps {
   children: React.ReactNode;
-  activeView: 'text' | 'pdf' | 'image' | 'history';
-  onViewChange: (view: 'text' | 'pdf' | 'image' | 'history') => void;
+  activeView: 'text' | 'pdf' | 'image' | 'history' | 'profile';
+  onViewChange: (view: 'text' | 'pdf' | 'image' | 'history' | 'profile') => void;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange }) => {
@@ -21,14 +21,16 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChan
     window.addEventListener('online', handleStatus);
     window.addEventListener('offline', handleStatus);
     
-    window.addEventListener('beforeinstallprompt', (e) => {
+    const promptHandler = (e: any) => {
         e.preventDefault();
         setDeferredPrompt(e);
-    });
+    };
+    window.addEventListener('beforeinstallprompt', promptHandler);
 
     return () => {
       window.removeEventListener('online', handleStatus);
       window.removeEventListener('offline', handleStatus);
+      window.removeEventListener('beforeinstallprompt', promptHandler);
     };
   }, []);
 
@@ -118,15 +120,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChan
                </button>
             )}
             {user && (
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-10 h-10 bg-slate-50 border-2 border-slate-200 rounded-none flex items-center justify-center text-slate-400 font-bold shadow-sm">
+              <button 
+                onClick={() => handleNavClick('profile')}
+                className={`w-full flex items-center gap-4 mb-6 p-4 border-2 transition-all group ${activeView === 'profile' ? 'bg-orange-50 border-orange-500 shadow-[4px_4px_0px_0px_rgba(249,115,22,1)]' : 'bg-white border-slate-100 hover:border-slate-200'}`}
+              >
+                <div className="w-10 h-10 bg-slate-50 border-2 border-slate-200 rounded-none flex items-center justify-center text-slate-400 font-bold shadow-sm group-hover:bg-orange-500 group-hover:text-white group-hover:border-slate-900 transition-colors">
                   {user.displayName?.[0] || user.email?.[0]?.toUpperCase()}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-300">Active Engineer</p>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-300 group-hover:text-orange-500">View Profile</p>
                   <p className="text-xs font-bold text-slate-900 truncate">{user.displayName || user.email}</p>
                 </div>
-              </div>
+              </button>
             )}
             <button
               onClick={handleLogout}

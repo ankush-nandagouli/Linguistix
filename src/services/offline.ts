@@ -1,25 +1,20 @@
+import Sanscript from '@indic-transliteration/sanscript';
 import { createWorker } from 'tesseract.js';
 
-declare global {
-    interface Window {
-        aksharmukha: any;
-    }
-}
-
 export const OFFLINE_SUPPORTED_LANGUAGES = [
-  { name: "Hindi", code: "hi", script: "Devanagari", internal: "Devanagari" },
-  { name: "Bengali", code: "bn", script: "Bengali", internal: "Bengali" },
-  { name: "Telugu", code: "te", script: "Telugu", internal: "Telugu" },
-  { name: "Marathi", code: "mr", script: "Devanagari", internal: "Devanagari" },
-  { name: "Tamil", code: "ta", script: "Tamil", internal: "Tamil" },
-  { name: "Gujarati", code: "gu", script: "Gujarati", internal: "Gujarati" },
-  { name: "Kannada", code: "kn", script: "Kannada", internal: "Kannada" },
-  { name: "Malayalam", code: "ml", script: "Malayalam", internal: "Malayalam" },
-  { name: "Punjabi", code: "pa", script: "Gurmukhi", internal: "Gurmukhi" },
-  { name: "Odia", code: "or", script: "Odia", internal: "Oriya" },
+  { name: "Hindi", code: "hi", script: "Devanagari", internal: "devanagari" },
+  { name: "Bengali", code: "bn", script: "Bengali", internal: "bengali" },
+  { name: "Telugu", code: "te", script: "Telugu", internal: "telugu" },
+  { name: "Marathi", code: "mr", script: "Devanagari", internal: "devanagari" },
+  { name: "Tamil", code: "ta", script: "Tamil", internal: "tamil" },
+  { name: "Gujarati", code: "gu", script: "Gujarati", internal: "gujarati" },
+  { name: "Kannada", code: "kn", script: "Kannada", internal: "kannada" },
+  { name: "Malayalam", code: "ml", script: "Malayalam", internal: "malayalam" },
+  { name: "Punjabi", code: "pa", script: "Gurmukhi", internal: "gurmukhi" },
+  { name: "Odia", code: "or", script: "Odia", internal: "oriya" },
 ];
 
-export async function offlineDetectLanguage(text: string) {
+export function offlineDetectLanguage(text: string) {
     // Basic heuristic: check for script ranges
     const devanagari = /[\u0900-\u097F]/;
     const bengali = /[\u0980-\u09FF]/;
@@ -31,26 +26,24 @@ export async function offlineDetectLanguage(text: string) {
     return "Unknown/Latin";
 }
 
-export async function offlineTransliterate(text: string, targetLanguage: string) {
-  if (!window.aksharmukha) {
-    return {
-        transliteratedText: text + " [Syncing Engine...]",
-        confidence: 0.2,
-        detectedLanguage: "Offline"
-    };
-  }
+export async function warmupEngine() {
+    // No-op for bundled version
+    console.log("Offline Engine (Bundled) Ready");
+}
 
+export async function offlineTransliterate(text: string, targetLanguage: string) {
   const isLatin = /^[A-Za-z0-9\s.,!?-]+$/.test(text);
-  const sourceLang = isLatin ? 'ISO' : 'Devanagari'; 
+  const sourceLang = isLatin ? 'itrans' : 'devanagari'; 
   const targetObj = OFFLINE_SUPPORTED_LANGUAGES.find(l => l.name === targetLanguage);
-  const target = targetObj?.internal || 'Devanagari';
-  const detected = await offlineDetectLanguage(text);
+  const target = targetObj?.internal || 'devanagari';
+  
+  const detected = offlineDetectLanguage(text);
   
   try {
-    const result = window.aksharmukha.convert(text, sourceLang, target);
+    const result = Sanscript.t(text, sourceLang, target);
     return {
         transliteratedText: result,
-        confidence: isLatin ? 0.85 : 0.7, // Heuristic confidence
+        confidence: isLatin ? 0.95 : 0.8,
         detectedLanguage: detected
     };
   } catch (error) {

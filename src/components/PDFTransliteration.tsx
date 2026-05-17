@@ -1,9 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { FileText, Download, Upload } from 'lucide-react';
+import { FileText, Download } from 'lucide-react';
 import { SUPPORTED_LANGUAGES, transliterateText } from '../services/gemini';
-import { db, auth } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '../lib/utils';
+import { auth } from '../lib/firebase';
+import { saveHistory } from '../lib/db';
 import { extractTextFromPDF, generateTransliteratedPDF } from '../services/pdf';
 
 export const PDFTransliteration: React.FC = () => {
@@ -44,18 +43,16 @@ export const PDFTransliteration: React.FC = () => {
       setConfidence(data.confidence);
       
       if (auth.currentUser) {
-        try {
-          await addDoc(collection(db, 'history'), {
-            userId: auth.currentUser.uid,
-            originalText: inputText,
-            transliteratedText: data.transliteratedText,
-            targetLanguage: targetLang.name,
-            type: 'pdf',
-            timestamp: serverTimestamp()
-          });
-        } catch (error) {
-          handleFirestoreError(error, OperationType.WRITE, 'history');
-        }
+        saveHistory({
+          userId: auth.currentUser.uid,
+          originalText: inputText,
+          transliteratedText: data.transliteratedText,
+          targetLanguage: targetLang.name,
+          type: 'pdf',
+          timestamp: Date.now()
+        }).catch(error => {
+          console.error("IndexedDB Save Error:", error);
+        });
       }
     } catch (error) {
       console.error(error);

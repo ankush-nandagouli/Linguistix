@@ -1,105 +1,54 @@
-# Linguistix: Premium Transliteration Engine
+# Linguistix
 
-Linguistix is a high-performance, AI-powered Indian script transliteration application designed for accuracy, speed, and cross-modal flexibility. It leverages Google Gemini AI alongside specialized OCR and PDF processing libraries to provide a premium phonetic transformation experience.
+Linguistix is a premium, high-performance Indian script transliteration engine designed for historians, linguists, and modern communicators. It combines state-of-the-art AI with robust offline capabilities to provide seamless script conversion across text, documents, and images.
 
----
+## 🚀 Core Features
 
-## 🚀 Key Features
+### 1. Multi-Modal Transliteration
+- **Text-to-Text**: Real-time transliteration between 10+ major Indian scripts (Hindi, Bengali, Sanskrit, Tamil, etc.) and ITRANS.
+- **Document Processing (PDF)**: Extract text from PDFs and generate new transliterated versions while preserving some structural context.
+- **Visual OCR (Image)**: Take a photo or upload an image. The engine detects text and transliterates it instantly.
 
-### 1. Multi-Modal Input
-- **Text Transliteration:** High-speed phonetic transformation of real-time text input into various Indian scripts (Hindi, Marathi, Sanskrit, etc.).
-- **Visual OCR (Image Processing):** Upload images containing text (signs, documents, handwritten notes) and extract/transliterate them instantly using Tesseract.js and Gemini.
-- **Document Processing (PDF):** Upload PDF files, parse their content, and receive a complete transliterated version.
+### 2. Intelligent Engine Hybrid
+- **Gemini Powered**: Uses advanced Google Gemini AI models for high-accuracy, context-aware transliteration when online.
+- **Offline First**: Bundles a local Sanscript engine for privacy-focused, zero-latency transliteration without an internet connection.
+- **Local OCR**: Employs Tesseract.js for client-side text recognition from images.
 
-### 2. Smart AI Engine
-- **Powered by Gemini:** Uses Google's latest Gemini models for context-aware language detection and highly accurate phonetic mapping.
-- **Phonetic Preservation:** Specifically tuned to maintain the phonetic nuances of Indian languages during script conversion.
+### 3. Voice & Accessibility
+- **Speech-to-Text**: Dictate your input directly into the engine.
+- **Neural Text-to-Speech**: Listen to the transliterated output in the target language's natural accent.
 
-### 3. Personalization & History
-- **Cloud History:** Securely save your transliteration session history to Firebase Firestore for later retrieval.
-- **Unified Authentication:** Seamless Google Login integration for cross-device access to your personal data.
+### 4. Data Privacy & History
+- **IndexedDB Storage**: Your transliteration history is stored locally in your browser using IndexedDB. No sensitive text content is sent to a cloud database.
+- **Firebase Authentication**: Securely manage your identity to separate local archives across different user profiles.
 
-### 4. Advanced UX/UI
-- **Neo-Brutalist Design:** A bold, high-contrast interface using custom spacing, heavy shadows, and unique typography.
-- **Fluid Animations:** Smooth state transitions and micro-interactions powered by `motion/react`.
-- **Responsive Architecture:** Fully optimized for desktop precision and mobile accessibility.
-
----
+### 5. Professional UI/UX
+- **Next-Gen Brutalist Design**: A bold, high-contrast interface built for efficiency and visual clarity.
+- **Motion Orchestration**: Fluid transitions and micro-animations that guide the user experience.
+- **Responsive Layout**: Precision-engineered for both desktop workflows and mobile-on-the-go usage.
 
 ## 🛠 Tech Stack
 
-| Layer | Technology |
-| :--- | :--- |
-| **Frontend** | React 19, TypeScript, Tailwind CSS |
-| **Animation** | Motion (formerly Framer Motion) |
-| **Database/Auth** | Firebase Auth & Google Cloud Firestore |
-| **AI / NLP** | Google Gemini API (`@google/genai`) |
-| **OCR** | Tesseract.js |
-| **PDF Handling** | PDF.js (Parsing) & jsPDF (Generation) |
-| **Icons** | Lucide React |
+- **Frontend**: React 18, Vite, TypeScript
+- **Styling**: Tailwind CSS
+- **Animations**: Motion (framer-motion)
+- **AI/ML**: Google Generative AI (Gemini), Tesseract.js
+- **Backend Services**: Firebase Authentication
+- **Local Persistence**: IndexedDB (idb)
+- **Document Ops**: jsPDF, PDF.js
+- **Transliteration**: @indic-transliteration/sanscript
+
+## 📖 How it Works
+
+1. **Detection**: Linguistix analyzes your input text or media.
+2. **Contextual Analysis**: Whether you're online or offline, the app selects the best engine for the task.
+3. **Phonetic Mapping**: Scripts are mapped phonetically to ensure the "sound" of the language is preserved during the visual switch.
+4. **Archive**: Every successful transliteration is logged in your personal local archive for future reference.
+
+## 🔒 Security & Privacy
+
+Linguistix is built with a "Privacy by Design" philosophy. All history is stored in the browser's **IndexedDB**, meaning your private notes and documents never leave your device unless required for API processing (online mode). Authentication is handled via industry-standard Firebase Auth.
 
 ---
 
-## 📦 Installation & Setup
-
-### Prerequisites
-- Node.js (v18+)
-- A Google AI Studio API Key (for Gemini)
-- A Firebase Project (for Authentication and Firestore)
-
-### 1. Clone & Install
-```bash
-# Clone the repository
-git clone <repository-url>
-cd linguistix
-
-# Install dependencies
-npm install
-```
-
-### 2. Environment Variables
-Create a `.env` file in the root directory and add the following:
-```env
-# Gemini AI Configuration
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# Firebase Configuration (Exposed to client via VITE prefix)
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...
-```
-
-### 3. Run Development Server
-```bash
-npm run dev
-```
-
----
-
-## 🏗 Component Architecture
-
-- **/src/components**: Main feature components (`TextTransliteration`, `PDFTransliteration`, `ImageTransliteration`).
-- **/src/lib**: Core library initializations (Firebase, Gemini).
-- **/src/services**: Abstraction layer for AI processing and external APIs.
-- **/src/types**: Unified TypeScript interfaces for state and data models.
-
----
-
-## 🚢 Deployment
-
-### Option 1: Google Cloud Run (Recommended)
-This application is container-ready. You can deploy the bundled Docker container directly to Google Cloud Run for high scalability and secure environment variable management.
-
-### Option 2: Static Hosting (Vercel / Netlify / Firebase Hosting)
-As a Vite-powered SPA, you can build the project and deploy the `dist/` folder to any static site hosting provider.
-```bash
-npm run build
-```
-
----
-
-## 📜 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+*Linguistix - Preserving the phonetic soul of the East.*

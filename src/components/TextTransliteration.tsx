@@ -3,9 +3,8 @@ import { Mic, MicOff, Volume2, Copy, Check } from 'lucide-react';
 import { SUPPORTED_LANGUAGES, transliterateText } from '../services/gemini';
 import { offlineTransliterate } from '../services/offline';
 import { speak, createSpeechRecognizer } from '../services/speech';
-import { db, auth } from '../lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '../lib/utils';
+import { auth } from '../lib/firebase';
+import { saveHistory } from '../lib/db';
 
 export const TextTransliteration: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -41,31 +40,50 @@ export const TextTransliteration: React.FC = () => {
     if (!inputText.trim() || isOverLimit) return;
     setIsLoading(true);
     try {
+      let data;
       if (isOffline) {
-        const data = await offlineTransliterate(inputText, targetLang.name);
-        setOutputText(data.transliteratedText);
-        setDetectedLang(data.detectedLanguage);
-        setConfidence(data.confidence);
+        data = await offlineTransliterate(inputText, targetLang.name);
       } else {
-        const data = await transliterateText(inputText, targetLang.name);
-        setOutputText(data.transliteratedText);
-        setDetectedLang(data.detectedLanguage);
-        setConfidence(data.confidence);
-        
-        if (auth.currentUser) {
-          try {
-            await addDoc(collection(db, 'history'), {
-              userId: auth.currentUser.uid,
-              originalText: inputText,
-              transliteratedText: data.transliteratedText,
-              targetLanguage: targetLang.name,
-              type: 'text',
-              timestamp: serverTimestamp()
-            });
-          } catch (error) {
-            handleFirestoreError(error, OperationType.WRITE, 'history');
+        // Add a 5s timeout to the online call to fallback to offline if the network is slow
+        const onlinePromise = transliterateText(inputText, targetLang.name);
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('TIMEOUT')), 5000)
+        );
+
+        try {
+          data = await Promise.race([onlinePromise, timeoutPromise]) as any;
+        } catch (err: any) {
+          if (err.message === 'TIMEOUT') {
+             console.log("Online transliteration timed out, falling back to offline engine");
+             data = await offlineTransliterate(inputText, targetLang.name);
+          } else {
+             throw err;
           }
         }
+      }
+
+      if (data.transliteratedText.includes('[Loading') || data.transliteratedText.includes('[Engine')) {
+          setOutputText(data.transliteratedText);
+          setIsLoading(false);
+          return;
+      }
+
+      setOutputText(data.transliteratedText);
+      setDetectedLang(data.detectedLanguage);
+      setConfidence(data.confidence);
+      
+      if (auth.currentUser) {
+        console.log("Saving history (IndexedDB) for UID:", auth.currentUser.uid);
+        saveHistory({
+          userId: auth.currentUser.uid,
+          originalText: inputText,
+          transliteratedText: data.transliteratedText,
+          targetLanguage: targetLang.name,
+          type: 'text',
+          timestamp: Date.now()
+        }).catch(error => {
+          console.error("IndexedDB Save Error:", error);
+        });
       }
     } catch (error) {
       console.error(error);
